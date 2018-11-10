@@ -11,5 +11,7 @@ import RealmSwift
 
 class Category: Object {
     @objc dynamic var name: String = ""
+    @objc dynamic var isImportant: Bool = false
+    @objc dynamic var isFinished: Bool = false
     let items = List<Item>()
 }

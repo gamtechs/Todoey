@@ -69,6 +69,12 @@ class TodoListViewController: UITableViewController {
         
         tableView.deselectRow(at: indexPath, animated: true)
     }
+    override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        
+        //        let important = importantAction(at: indexPath)
+        let delete = deleteAction(at: indexPath)
+        return UISwipeActionsConfiguration(actions: [delete])
+    }
 
     //MARK - Add new items
     @IBAction func addButtomPressed(_ sender: UIBarButtonItem) {
@@ -112,6 +118,26 @@ class TodoListViewController: UITableViewController {
     
     
     //MARK - Model Manipulation Methods
+    
+    func deleteAction(at indexPath: IndexPath) -> UIContextualAction {
+        let action = UIContextualAction(style: .destructive, title: "Delete") { (action, view, completion) in
+            if let itemDelete = self.todoItems?[indexPath.row] {
+                do {
+                    try self.realm.write {
+                        self.realm.delete(itemDelete)
+                    }
+                } catch {
+                    print("Error deleting data, \(error)")
+                }
+            }
+            self.tableView.deleteRows(at: [indexPath], with: .automatic)
+            completion(true)
+        }
+        action.image = #imageLiteral(resourceName: "delete-icon")
+        action.backgroundColor = .red
+        
+        return action
+    }
     
     func loadItems() {
         

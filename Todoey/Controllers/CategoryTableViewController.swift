@@ -19,6 +19,8 @@ class CategoryTableViewController: UITableViewController {
         super.viewDidLoad()
         
         loadCategories()
+        
+        tableView.rowHeight = 80.0
     }
 
     //MARK: - TableView Datasource Methods
@@ -38,7 +40,6 @@ class CategoryTableViewController: UITableViewController {
     
     
     //MARK: - Add New Categories
-    
     
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         
@@ -66,9 +67,6 @@ class CategoryTableViewController: UITableViewController {
         
     }
     
-
-    
-    
     //MARK: - TableView Delegate Methods
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -86,9 +84,48 @@ class CategoryTableViewController: UITableViewController {
         }
     }
     
+    override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        
+//        let important = importantAction(at: indexPath)
+        let delete = deleteAction(at: indexPath)
+        return UISwipeActionsConfiguration(actions: [delete])
+    }
     
+//MARK: - Data Manipulation Methods
     
-    //MARK: - Data Manipulation Methods
+    func importantAction(at IndexPath: IndexPath) -> UIContextualAction  {
+        
+        let cat = categories![IndexPath.row]
+        let action = UIContextualAction(style: .normal, title: "important") { (action, view, completion) in
+            cat.isImportant = !cat.isImportant
+            completion(true)
+        }
+        action.image = #imageLiteral(resourceName: "alarm")
+        action.backgroundColor = cat.isImportant ? .purple : .gray
+        
+        return action
+    }
+    
+    func deleteAction(at indexPath: IndexPath) -> UIContextualAction {
+        let action = UIContextualAction(style: .destructive, title: "Delete") { (action, view, completion) in
+            if let catDelete = self.categories?[indexPath.row] {
+            do {
+                try self.realm.write {
+                    self.realm.delete(catDelete)
+                }
+            } catch {
+                print("Error deleting data, \(error)")
+            }
+        }
+        self.tableView.deleteRows(at: [indexPath], with: .automatic)
+            completion(true)
+        }
+        action.image = #imageLiteral(resourceName: "delete-icon")
+        action.backgroundColor = .red
+        
+        return action
+    }
+    
     
     func save(category: Category) {
         
