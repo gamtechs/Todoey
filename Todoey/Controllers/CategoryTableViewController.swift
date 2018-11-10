@@ -8,6 +8,7 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
 class CategoryTableViewController: UITableViewController {
     
@@ -21,6 +22,9 @@ class CategoryTableViewController: UITableViewController {
         loadCategories()
         
         tableView.rowHeight = 80.0
+        
+        tableView.separatorStyle = .none
+        
     }
 
     //MARK: - TableView Datasource Methods
@@ -33,7 +37,17 @@ class CategoryTableViewController: UITableViewController {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
         
-        cell.textLabel?.text = categories?[indexPath.row].name ?? "No categories added yet"
+        if let category = categories?[indexPath.row] {
+            
+            cell.textLabel?.text = category.name
+            
+            guard let categoryColour = UIColor(hexString: category.colour) else {fatalError()}
+            
+            cell.backgroundColor = categoryColour
+            cell.textLabel?.textColor = ContrastColorOf(categoryColour, returnFlat: true)
+            
+            
+        }
 
         return cell
     }
@@ -52,6 +66,7 @@ class CategoryTableViewController: UITableViewController {
             
             let newCategory = Category()
             newCategory.name = textField.text!
+            newCategory.colour = UIColor.randomFlat.hexValue()
             
             self.save(category: newCategory)
             
@@ -86,25 +101,11 @@ class CategoryTableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         
-//        let important = importantAction(at: indexPath)
         let delete = deleteAction(at: indexPath)
         return UISwipeActionsConfiguration(actions: [delete])
     }
     
 //MARK: - Data Manipulation Methods
-    
-    func importantAction(at IndexPath: IndexPath) -> UIContextualAction  {
-        
-        let cat = categories![IndexPath.row]
-        let action = UIContextualAction(style: .normal, title: "important") { (action, view, completion) in
-            cat.isImportant = !cat.isImportant
-            completion(true)
-        }
-        action.image = #imageLiteral(resourceName: "alarm")
-        action.backgroundColor = cat.isImportant ? .purple : .gray
-        
-        return action
-    }
     
     func deleteAction(at indexPath: IndexPath) -> UIContextualAction {
         let action = UIContextualAction(style: .destructive, title: "Delete") { (action, view, completion) in
